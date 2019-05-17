@@ -1,15 +1,39 @@
 ---
 - hosts: centos
-  become: yes
   tasks:
+  - name: Connect check
+    ping:
+
+  - name: Disabled selinux
+    become: yes
+    selinux: policy=targeted state=disabled
+
+    # - name: Restart machine
+    #   shell: sleep 2 && shutdown -r now
+    #   async: 1
+    #   poll: 0
+    #   become: true
+    #   ignore_errors: true
+    #
+    # - name: Wait for reboot
+    #   wait_for_connection:
+    #     delay: 5
+    #     timeout: 300
+    #
+    # - name: Connect check
+    #   ping:
+
   - name: Install epel
+    become: yes
     yum:
       name: "{{ packages }}"
       state: present
     vars:
       packages:
       - epel-release
+
   - name: Install clamav
+    become: yes
     yum:
       name: "{{ packages }}"
       state: present
@@ -26,3 +50,50 @@
       - clamav-devel
       - clamav-lib
       - clamav-server-systemd
+
+  - name: Copy scan.conf
+    become: yes
+    copy:
+      src: config/scan.conf
+      dest: /etc/clamd.d/scan.conf
+      mode: 0644
+      backup: yes
+
+  - name: Create symlinks to /etc/scan.conf
+    become: yes
+    file:
+      src: /etc/clamd.d/scan.conf
+      dest: /etc/clamd.conf
+      state: link
+
+  - name: Start clamd@scan daemon
+    become: yes
+    systemd:
+      name: clamd@scan.service
+      state: started
+      enabled: yes
+      daemon_reload: yes
+
+  - name: Copy freshclam.conf
+    become: yes
+    copy:
+      src: config/freshclam.conf
+      dest: /etc/freshclam.conf
+      mode: 0644
+      backup: yes
+
+  - name: Copy exclude list
+    become: yes
+    copy:
+      src: config/clamscan-exclude.conf
+      dest: /root/clamscan-exclude.conf
+      mode: 0644
+      backup: yes
+
+  - name: Copy virusscan.sh
+    become: yes
+    copy:
+      src: config/virusscan.sh
+      dest: /etc/cron.daily/virusscan.sh
+      mode: 0755
+      backup: yes
