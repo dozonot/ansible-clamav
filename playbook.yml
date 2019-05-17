@@ -1,0 +1,28 @@
+---
+- hosts: centos
+  become: yes
+  tasks:
+  - name: Install epel
+    yum:
+      name: "{{ packages }}"
+      state: present
+    vars:
+      packages:
+      - epel-release
+  - name: Install clamav
+    yum:
+      name: "{{ packages }}"
+      state: present
+      enablerepo: epel
+    vars:
+      packages:
+      - clamav-server
+      - clamav-data
+      - clamav-update
+      - clamav-filesystem
+      - clamav
+      - clamav-scanner
+      - clamav-scanner-systemd
+      - clamav-devel
+      - clamav-lib
+      - clamav-server-systemd
