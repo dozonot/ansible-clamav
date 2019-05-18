@@ -1,0 +1,81 @@
+---
+- hosts: all
+  tasks:
+  - name: Connect check
+    ping:
+
+  - name: Install clamav
+    become: yes
+    apt:
+      name: "{{ packages }}"
+      state: present
+      update_cache: yes
+    vars:
+      packages:
+      - clamav 
+      - clamav-daemon
+
+  - name: Install AppArmor-utils
+    become: yes
+    apt:
+      name: "{{ packages }}"
+      state: present
+      update_cache: yes
+    vars:
+      packages:
+      - apparmor-utils
+
+  - name: Configure AppArmor
+    become: yes
+    command: aa-complain clamd
+
+  - name: Copy scan.conf
+    become: yes
+    copy:
+      src: config/ubuntu/clamd.conf
+      dest: /etc/clamav/clamd.conf
+      mode: 0644
+      backup: yes
+
+  - name: Copy freshclam.conf
+    become: yes
+    copy:
+      src: config/ubuntu/freshclam.conf
+      dest: /etc/clamav/freshclam.conf
+      mode: 0644
+      backup: yes
+
+  - name: Stop clamav-freshclam.service
+    become: yes
+    systemd:
+      name: clamav-freshclam.service
+      state: stopped
+      daemon_reload: yes
+
+  - name: Download new pattern file
+    become: yes
+    command: freshclam --log=/var/log/clamav/freshclam.log
+  
+  - name: Start clamav-freshclam.service
+    become: yes
+    systemd:
+      name: clamav-freshclam.service
+      state: started
+      enabled: yes
+      daemon_reload: yes
+  
+  - name: Start clamav-daemon.service
+    become: yes
+    systemd:
+      name: clamav-daemon.service
+      state: started
+      enabled: yes
+      daemon_reload: yes
+  
+  - name: Copy virusscan.sh
+    become: yes
+    copy:
+      src: config/ubuntu/virusscan.sh
+      dest: /etc/cron.daily/virusscan.sh
+      mode: 0755
+      backup: yes
