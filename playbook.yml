@@ -67,10 +67,10 @@
       mode: 0644
       backup: yes
 
-  - name: Copy exclude list
+  - name: copy exclude list
     become: yes
     copy:
-      src: config/centos/clamscan-exclude.conf
+      src: config/clamscan-exclude.conf
       dest: /root/clamscan-exclude.conf
       mode: 0644
       backup: yes
@@ -93,6 +93,7 @@
     apt:
       name: "{{ packages }}"
       state: present
+      update_cache: yes
     vars:
       packages:
       - clamav 
@@ -103,6 +104,7 @@
     apt:
       name: "{{ packages }}"
       state: present
+      update_cache: yes
     vars:
       packages:
       - apparmor-utils
@@ -153,14 +155,6 @@
       state: started
       enabled: yes
       daemon_reload: yes
-  
-  - name: Copy exclude list
-    become: yes
-    copy:
-      src: config/clamscan-exclude.conf
-      dest: /etc/clamav/clamscan-exclude.conf
-      mode: 0644
-      backup: yes
   
   - name: Copy virusscan.sh
     become: yes

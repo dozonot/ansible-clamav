@@ -30,7 +30,4 @@ fi
 CLAMSCANTMP=`mktemp`
 clamdscan --recursive --move=/tmp ${EXCLUDE} / > $CLAMSCANTMP 2>&1
 [ ! -z "$(grep FOUND$ $CLAMSCANTMP)" ] && \
-
-# report mail send
-grep FOUND$ $CLAMSCANTMP | mail -s "Virus Found in `hostname`" root
 rm -f $CLAMSCANTMP
