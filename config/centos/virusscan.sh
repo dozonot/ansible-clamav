@@ -12,20 +12,6 @@ fi
     --datadir="/var/lib/clamav" \
     --log="$LOG_FILE"
 
-# exclude setup
-EXCLUDECONF=/root/clamscan-exclude.conf
-if [ -s $EXCLUDECONF ]; then
-    for i in `cat $EXCLUDECONF`
-    do
-        if [ $(echo "$i"|grep \/$) ]; then
-            i=`echo $i|sed -e 's/^\([^ ]*\)\/$/\1/p' -e d`
-            EXCLUDE="${EXCLUDE} --exclude-dir=^$i"
-        else
-            EXCLUDE="${EXCLUDE} --exclude=^$i"
-        fi
-    done
-fi
-
 # virus scan
 CLAMSCANTMP=`mktemp`
 clamdscan --recursive --move=/tmp ${EXCLUDE} / > $CLAMSCANTMP 2>&1
